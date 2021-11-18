@@ -13,7 +13,7 @@ public sealed class BibcamCameraController : MonoBehaviour
 
     #region MonoBehaviour implementation
 
-    void LateUpdate()
+    public void LateUpdate()
     {
         var meta = _decoder.Metadata;
         if (!meta.IsValid) return;

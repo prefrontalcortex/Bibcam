@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Bibcam.Decoder {
 
+[ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
 public sealed class BibcamBackground : MonoBehaviour
 {

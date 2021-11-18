@@ -5,7 +5,7 @@ using UnityEngine.Video;
 
 namespace Bibcam.Decoder {
 
-sealed class BibcamVideoFeeder : MonoBehaviour
+public sealed class BibcamVideoFeeder : MonoBehaviour
 {
 #if BIBCAM_HAS_UNITY_VIDEO
 
@@ -18,7 +18,7 @@ sealed class BibcamVideoFeeder : MonoBehaviour
 
     #region MonoBehaviour implementation
 
-    void Update()
+    public void Update()
     {
         var video = GetComponent<VideoPlayer>();
         if (video.texture == null) return;

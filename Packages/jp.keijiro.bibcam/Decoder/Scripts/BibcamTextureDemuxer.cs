@@ -18,6 +18,9 @@ public sealed class BibcamTextureDemuxer : MonoBehaviour
 
     public void Demux(Texture source, in Metadata meta)
     {
+        if(!_material)
+            _material = new Material(_shader);
+        
         // Lazy initialization for demuxing buffers
         var (w, h) = (source.width, source.height);
         if (_color == null) _color = GfxUtil.RGBARenderTexture(w / 2, h);
@@ -40,9 +43,6 @@ public sealed class BibcamTextureDemuxer : MonoBehaviour
     #endregion
 
     #region MonoBehaviour implementation
-
-    void Start()
-      => _material = new Material(_shader);
 
     void OnDestroy()
     {
