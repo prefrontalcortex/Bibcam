@@ -17,6 +17,9 @@ public sealed class BibcamMetadataDecoder : MonoBehaviour
 
     public void Decode(Texture source)
     {
+        if (_readbackBuffer == null || !_readbackBuffer.IsValid())
+            _readbackBuffer = GfxUtil.StructuredBuffer(16, sizeof(float));
+                
         // Decoder kernel dispatching
         _shader.SetTexture(0, "Source", source);
         _shader.SetBuffer(0, "Output", _readbackBuffer);
@@ -36,9 +39,6 @@ public sealed class BibcamMetadataDecoder : MonoBehaviour
     #endregion
 
     #region MonoBehaviour implementation
-
-    void Start()
-      => _readbackBuffer = GfxUtil.StructuredBuffer(12, sizeof(float));
 
     void OnDestroy()
       => _readbackBuffer.Dispose();
