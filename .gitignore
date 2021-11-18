@@ -9,3 +9,7 @@ Desktop.ini
 /Recordings
 /Temp
 /UserSettings
+obj
+*.csproj
+*.sln
+.idea

@@ -40,8 +40,8 @@ void Fragment(float4 position : SV_Position,
     float3 p = DistanceToWorldPosition(texCoord, d, _RayParams, _InverseView);
 
     // Coloring
-    c.rgb = lerp(c.rgb, float3(1, 1, 1), Gridline(p * 10));
-    c.rgb = lerp(c.rgb, float3(1, 0, 1), c.a * 0.5);
+    c.rgb = lerp(c.rgb, float3(1, 1, 1), Gridline(p * 10) * 0.3);
+    c.rgb = lerp(c.rgb, float3(0, 1, 1), c.a * 0.3);
 
     // Output
     outColor = c;
