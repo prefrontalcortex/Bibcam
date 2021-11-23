@@ -16,6 +16,9 @@ public class EditorPlayback : MonoBehaviour
 
     private BibcamVideoFeeder feeder;
     private BibcamCameraController camController;
+    
+    [SerializeField]
+    private BibcamPointCloud pointCloud;
 
     private void OnEnable()
     {
@@ -125,7 +128,7 @@ public class EditorPlayback : MonoBehaviour
     }
 
     [ContextMenu("Sample")]
-    async void Sample()
+    private async void Sample()
     {
         samples.Clear();
         
@@ -138,6 +141,9 @@ public class EditorPlayback : MonoBehaviour
         v.seekCompleted -= UpdateScene;
         v.seekCompleted += SampleTaken;
         
+        if(pointCloud)
+            pointCloud.BeginSample();
+        
         var sampleTime = 0.0;
         while (sampleTime < l)
         {
@@ -148,14 +154,20 @@ public class EditorPlayback : MonoBehaviour
             if(Mathf.Abs((float)v.time - (float) sampleTime) < 0.1f)
                 samples.Add(Camera.main.transform.localToWorldMatrix); 
             
+            if(pointCloud)
+                pointCloud.SampleFrame();
+            
             // seek time and wait for seek to be finished
             sampleTime += timestep;
         }
+        if(pointCloud)
+            pointCloud.EndSample();
 
         sampleHasBeenTaken = false;
         v.time = 0;
         while (!sampleHasBeenTaken) await Task.Delay(10);
         v.seekCompleted -= SampleTaken;
+        
 
         OnDisable();
         OnEnable();
