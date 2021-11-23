@@ -18,7 +18,7 @@ public sealed class BibcamVideoFeeder : MonoBehaviour
 
     #region MonoBehaviour implementation
 
-    void Update()
+    public void Update()
     {
         var video = GetComponent<VideoPlayer>();
         if (video.texture == null) return;

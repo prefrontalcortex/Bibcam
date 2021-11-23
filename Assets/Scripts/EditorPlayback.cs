@@ -13,9 +13,13 @@ public class EditorPlayback : MonoBehaviour
 {
     [Range(0,1)]
     public float time;
+    public int sampleCount = 100;
 
     private BibcamVideoFeeder feeder;
     private BibcamCameraController camController;
+    
+    [SerializeField]
+    private BibcamPointCloud pointCloud;
 
     private void OnEnable()
     {
@@ -125,7 +129,7 @@ public class EditorPlayback : MonoBehaviour
     }
 
     [ContextMenu("Sample")]
-    async void Sample()
+    private async void Sample()
     {
         samples.Clear();
         
@@ -133,12 +137,15 @@ public class EditorPlayback : MonoBehaviour
         var l = v.length;
         
         // take 100 samples
-        var timestep = l / 100.0;
+        var timestep = l / sampleCount;
 
         v.seekCompleted -= UpdateScene;
         v.seekCompleted += SampleTaken;
         
-        var sampleTime = 0.0;
+        if(pointCloud)
+            pointCloud.BeginSample();
+        
+        var sampleTime = timestep;
         while (sampleTime < l)
         {
             sampleHasBeenTaken = false;
@@ -148,14 +155,20 @@ public class EditorPlayback : MonoBehaviour
             if(Mathf.Abs((float)v.time - (float) sampleTime) < 0.1f)
                 samples.Add(Camera.main.transform.localToWorldMatrix); 
             
+            if(pointCloud)
+                pointCloud.SampleFrame();
+            
             // seek time and wait for seek to be finished
             sampleTime += timestep;
         }
+        if(pointCloud)
+            pointCloud.EndSample();
 
         sampleHasBeenTaken = false;
         v.time = 0;
         while (!sampleHasBeenTaken) await Task.Delay(10);
         v.seekCompleted -= SampleTaken;
+        
 
         OnDisable();
         OnEnable();
