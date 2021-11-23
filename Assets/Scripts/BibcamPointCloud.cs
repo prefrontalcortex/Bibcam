@@ -1,7 +1,5 @@
 ﻿using System;
 using Bibcam.Decoder;
-using UnityEditor;
-using UnityEditor.Search;
 using UnityEngine;
 
 namespace Bibcam
@@ -19,6 +17,7 @@ namespace Bibcam
 		[Header("Debugging")] 
 		[SerializeField] private bool renderGizmos = false;
 		[SerializeField] private int gizmosOffset = 0;
+		[SerializeField] private int currentPointsCount;
 
 		private ComputeBuffer points, args, colors;
 		private Vector3[] pointsDebug;
@@ -45,7 +44,7 @@ namespace Bibcam
 
 			var expectedPoints = Mathf.CeilToInt(sampleQuality * depthTex.width * depthTex.height);
 
-			if (points == null || points.count != expectedPoints)
+			if (points == null || !points.IsValid() || points.count != expectedPoints)
 			{
 				Dispose();
 				points = new ComputeBuffer(expectedPoints, sizeof(float) * 3, ComputeBufferType.Structured);
@@ -68,6 +67,8 @@ namespace Bibcam
 				Mathf.CeilToInt(tx),
 				Mathf.CeilToInt(ty),
 				1);
+
+			currentPointsCount = points.count;
 
 			if (!renderGizmos)
 			{
