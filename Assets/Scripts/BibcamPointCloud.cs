@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bibcam.Decoder;
+using UnityEditor;
 using UnityEngine;
 
 namespace Bibcam
@@ -9,15 +11,14 @@ namespace Bibcam
 	{
 		[SerializeField] private BibcamTextureDemuxer demuxer;
 		[SerializeField] private ComputeShader shader;
-		[SerializeField, Range(0,1)] private float sampleQuality = 1;
+		[SerializeField, Range(0, 1)] private float sampleQuality = 1;
 
 		[Header("Rendering")] [SerializeField] private Mesh particleMesh;
 		[SerializeField] private Material particleMaterial;
+		[SerializeField] private bool renderBufferedPoints;
 
-		[Header("Debugging")] 
-		[SerializeField] private bool renderGizmos = false;
+		[Header("Debugging")] [SerializeField] private bool renderGizmos = false;
 		[SerializeField] private int gizmosOffset = 0;
-		[SerializeField] private int currentPointsCount;
 
 		private ComputeBuffer points, args, colors;
 		private Vector3[] pointsDebug;
@@ -26,12 +27,75 @@ namespace Bibcam
 		private static readonly int s_Points = Shader.PropertyToID("_Points");
 		private static readonly int s_Colors = Shader.PropertyToID("_Colors");
 
+
+		private readonly List<Vector3> bufferedPoints = new List<Vector3>();
+		private readonly List<Vector3> bufferedColors = new List<Vector3>();
+		private ComputeBuffer bufferedPointsBuffer, bufferedColorsBuffer;
+		private Vector3[] tempContainer;
+		
+		public void BeginSample()
+		{
+			renderBufferedPoints = false;
+			ClearCache();
+		}
+
+		public void SampleFrame()
+		{
+			Sample();
+			if (tempContainer == null || tempContainer.Length != points.count)
+				tempContainer = new Vector3[points.count];
+			points.GetData(tempContainer);
+			bufferedPoints.AddRange(tempContainer);
+			colors.GetData(tempContainer);
+			bufferedColors.AddRange(tempContainer);
+		}
+
+		public void EndSample()
+		{
+			Debug.Log("Sampled " + bufferedPoints.Count.ToString("N0") + " points");
+			tempContainer = null;
+			renderBufferedPoints = true;
+			bufferedPointsBuffer = new ComputeBuffer(bufferedPoints.Count, sizeof(float) * 3, ComputeBufferType.Structured);
+			bufferedColorsBuffer = new ComputeBuffer(bufferedColors.Count, sizeof(float) * 3, ComputeBufferType.Structured);
+			bufferedPointsBuffer.SetData(bufferedPoints);
+			bufferedColorsBuffer.SetData(bufferedColors);
+			Update();
+		}
+
+		[ContextMenu(nameof(ClearCache))]
+		private void ClearCache()
+		{
+			bufferedPoints.Clear();
+			bufferedColors.Clear();
+			bufferedPointsBuffer?.Dispose();
+			bufferedColorsBuffer?.Dispose();
+		}
+
 		private void OnDisable()
 		{
 			Dispose();
 		}
 
 		private void Update()
+		{
+			if (renderBufferedPoints)
+			{
+				if (bufferedPointsBuffer != null &&
+				    bufferedPointsBuffer.IsValid() &&
+				    bufferedColorsBuffer != null &&
+				    bufferedColorsBuffer.IsValid())
+				{
+					Render(bufferedPointsBuffer, bufferedColorsBuffer);
+				}
+			}
+			else
+			{
+				Sample();
+				Render(points, colors);
+			}
+		}
+
+		private void Sample()
 		{
 			if (!demuxer || !shader) return;
 			var depthTex = demuxer.DepthTexture;
@@ -63,36 +127,34 @@ namespace Bibcam
 			shader.SetMatrix("inverseView", inverseView);
 			var tx = depthTex.width / 32f * sampleQuality;
 			var ty = depthTex.height / 32f * sampleQuality;
-			shader.SetFloat("colorHeightFactor", colTex.height/(float)depthTex.height);
+			shader.SetFloat("colorHeightFactor", colTex.height / (float)depthTex.height);
 			shader.Dispatch(0,
 				Mathf.CeilToInt(tx),
 				Mathf.CeilToInt(ty),
 				1);
-
-			currentPointsCount = points.count;
-
+			
 			if (!renderGizmos)
 			{
-				if(pointsDebug == null || pointsDebug.Length != points.count)
+				if (pointsDebug == null || pointsDebug.Length != points.count)
 					pointsDebug = new Vector3[points.count];
 				points.GetData(pointsDebug);
 			}
+		}
 
-			if (particleMesh && particleMaterial)
-			{
-				argsData ??= new uint[5];
-				argsData[0] = particleMesh.GetIndexCount(0);
-				argsData[1] = (uint)expectedPoints;
-				argsData[2] = particleMesh.GetIndexStart(0);
-				argsData[3] = particleMesh.GetBaseVertex(0);
-
-				if(args == null || !args.IsValid())
-					args = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
-				args.SetData(argsData);
-				particleMaterial.SetBuffer(s_Points, points);
-				particleMaterial.SetBuffer(s_Colors, colors);
-				Graphics.DrawMeshInstancedIndirect(particleMesh, 0, particleMaterial, new Bounds(Vector3.zero, Vector3.one * 1000), args);
-			}
+		private void Render(ComputeBuffer pointsBuffer, ComputeBuffer colorBuffer)
+		{
+			if (!particleMesh || !particleMaterial) return;
+			argsData ??= new uint[5];
+			argsData[0] = particleMesh.GetIndexCount(0);
+			argsData[1] = (uint)pointsBuffer.count;
+			argsData[2] = particleMesh.GetIndexStart(0);
+			argsData[3] = particleMesh.GetBaseVertex(0);
+			if (args == null || !args.IsValid())
+				args = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
+			args.SetData(argsData);
+			particleMaterial.SetBuffer(s_Points, pointsBuffer);
+			particleMaterial.SetBuffer(s_Colors, colorBuffer);
+			Graphics.DrawMeshInstancedIndirect(particleMesh, 0, particleMaterial, new Bounds(Vector3.zero, Vector3.one * 1000), args);
 		}
 
 		private void OnDrawGizmos()
