@@ -63,6 +63,7 @@ namespace Bibcam
 			shader.SetMatrix("inverseView", inverseView);
 			var tx = depthTex.width / 32f * sampleQuality;
 			var ty = depthTex.height / 32f * sampleQuality;
+			shader.SetFloat("colorHeightFactor", colTex.height/(float)depthTex.height);
 			shader.Dispatch(0,
 				Mathf.CeilToInt(tx),
 				Mathf.CeilToInt(ty),

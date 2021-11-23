@@ -7,6 +7,7 @@ RWStructuredBuffer<float3> _Colors;
 float quality;
 float4x4 inverseView;
 float4 rayParams;
+float colorHeightFactor;
 
 float3 DistanceToWorldPosition(const float2 uv, const float d, in float4 rayParams, in float4x4 inverseView)
 {
@@ -15,22 +16,40 @@ float3 DistanceToWorldPosition(const float2 uv, const float d, in float4 rayPara
     return mul(inverseView, float4(ray * d, 1)).xyz;
 }
 
-
-[numthreads(32,32,1)]
-void CSMain(uint3 id : SV_DispatchThreadID)
+void SampleDepth(uint2 pixel)
 {
     uint width, height;
     _DepthTexture.GetDimensions(width, height);
-    uint2 pixel = id.xy;
     if(pixel.x >= width || pixel.y >= height) return;
-    float2 uv = pixel/float2(width,height);
+    
+    float2 uv = pixel/float2(width,height); 
     uv /= quality;
-    uint2 samplePixel = uint2(uv.x * width, uv.y * height);
+    const uint2 samplePixel = uint2(uv.x * width, uv.y * height);
     
     const float depth = _DepthTexture[samplePixel];
     const float3 wp = DistanceToWorldPosition(uv, depth, rayParams, inverseView);
     const uint index = pixel.x + width * pixel.y;
     _Points[index] = wp;
+}
 
-    _Colors[index] = _ColorTexture[samplePixel].xyz;
+void SampleColor(uint2 pixel)
+{
+    uint width, height;
+    _ColorTexture.GetDimensions(width, height);
+    if(pixel.x >= width || pixel.y >= height) return;
+    
+    float2 uv = pixel/float2(width,height); 
+    uv /= quality;
+    const uint2 samplePixel = uint2(uv.x * width, uv.y * height * colorHeightFactor);
+    
+    const float3 color = _ColorTexture[samplePixel];
+    const uint index = pixel.x + width * pixel.y;
+    _Colors[index] = color;
+}
+
+[numthreads(32,32,1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    SampleDepth(id.xy);
+    SampleColor(id.xy);
 }
