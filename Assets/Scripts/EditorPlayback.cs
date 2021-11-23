@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bibcam;
 using Bibcam.Decoder;
 using UnityEditor;
 using UnityEngine;
@@ -12,6 +13,9 @@ public class EditorPlayback : MonoBehaviour
 {
     [Range(0,1)]
     public float time;
+
+    private BibcamVideoFeeder feeder;
+    private BibcamCameraController camController;
 
     private void OnEnable()
     {
@@ -35,7 +39,7 @@ public class EditorPlayback : MonoBehaviour
     }
 
     private bool isSeeking = false;
-    void Seek(double time)
+    private void Seek(double time)
     {
         if (overridePlay) return;
         if (isSeeking) return;
@@ -49,11 +53,16 @@ public class EditorPlayback : MonoBehaviour
     private void UpdateScene(VideoPlayer source) 
     {
         if (!source) return;
+
+        if (!feeder && !TryGetComponent(out feeder)) return;
+        var cam = Camera.main;
+        if (!cam) return;
+        if (!camController && !cam.TryGetComponent(out camController)) return;
         
         // update metadata decoder and texture demuxer
-        GetComponent<BibcamVideoFeeder>().Update();
-        Camera.main.GetComponent<BibcamCameraController>().LateUpdate();
-        
+        feeder.Update();
+        camController.LateUpdate();
+
         // repaint scene view
         SceneView.RepaintAll();
 
