@@ -1,0 +1,36 @@
+﻿#pragma kernel CSMain
+
+Texture2D<float4> _ColorTexture;
+Texture2D<float> _DepthTexture;
+RWStructuredBuffer<float3> _Points;
+RWStructuredBuffer<float3> _Colors;
+float quality;
+float4x4 inverseView;
+float4 rayParams;
+
+float3 DistanceToWorldPosition(const float2 uv, const float d, in float4 rayParams, in float4x4 inverseView)
+{
+    float3 ray = float3((uv - 0.5) * 2, 1);
+    ray.xy = (ray.xy + rayParams.xy) * rayParams.zw;
+    return mul(inverseView, float4(ray * d, 1)).xyz;
+}
+
+
+[numthreads(32,32,1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    uint width, height;
+    _DepthTexture.GetDimensions(width, height);
+    uint2 pixel = id.xy;
+    if(pixel.x >= width || pixel.y >= height) return;
+    float2 uv = pixel/float2(width,height);
+    uv /= quality;
+    uint2 samplePixel = uint2(uv.x * width, uv.y * height);
+    
+    const float depth = _DepthTexture[samplePixel];
+    const float3 wp = DistanceToWorldPosition(uv, depth, rayParams, inverseView);
+    const uint index = pixel.x + width * pixel.y;
+    _Points[index] = wp;
+
+    _Colors[index] = _ColorTexture[samplePixel].xyz;
+}

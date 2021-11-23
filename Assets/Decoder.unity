@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.9142569, g: 0.89843357, b: 0.90720415, a: 1}
+  m_IndirectSpecularColor: {r: 0.9142569, g: 0.8984351, b: 0.90720415, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -289,8 +289,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 153388030}
-  m_LocalRotation: {x: 0.3323343, y: 0.3306423, z: -0.14446113, w: 0.871413}
-  m_LocalPosition: {x: -3.1134639, y: 0.056119144, z: 1.803045}
+  m_LocalRotation: {x: 0.107339196, y: 0.599979, z: -0.12072398, w: 0.7835364}
+  m_LocalPosition: {x: -4.681717, y: 0.23401362, z: 2.5100412}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1208,6 +1208,7 @@ GameObject:
   - component: {fileID: 1618752109}
   - component: {fileID: 1618752108}
   - component: {fileID: 1618752111}
+  - component: {fileID: 1618752112}
   m_Layer: 0
   m_Name: Source
   m_TagString: Untagged
@@ -1234,13 +1235,13 @@ VideoPlayer:
   m_RenderMode: 4
   m_AspectRatio: 2
   m_DataSource: 1
-  m_PlaybackSpeed: 1
+  m_PlaybackSpeed: 0
   m_AudioOutputMode: 0
   m_TargetAudioSources:
   - {fileID: 0}
   m_DirectAudioVolumes:
   - 1
-  m_Url: 
+  m_Url: C:\git\Bibcam\Assets\StreamingAssets/Test.mp4
   m_EnabledAudioTracks: 01
   m_DirectAudioMutes: 00
   m_ControlledAudioTrackCount: 1
@@ -1317,7 +1318,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 194ddbcdfd314f0418f0c33785e19348, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  time: 0.42
+  time: 0.584
+--- !u!114 &1618752112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1618752105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db3cee191d164a8db5fd736921dca5b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  demuxer: {fileID: 1618752108}
+  shader: {fileID: 7200000, guid: 0bf75a12bf594a49b55d437c88878283, type: 3}
+  sampleQuality: 0.316
+  particleMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  particleMaterial: {fileID: 2100000, guid: a1c5026ae3752e94b8401621d7bb127d, type: 2}
+  renderGizmos: 0
+  gizmosOffset: 0
 --- !u!1 &1943087745
 GameObject:
   m_ObjectHideFlags: 0

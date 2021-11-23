@@ -13,3 +13,4 @@ obj
 *.csproj
 *.sln
 .idea
+Assets/StreamingAssets/Test.mp4.meta
