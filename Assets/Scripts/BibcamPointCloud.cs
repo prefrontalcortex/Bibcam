@@ -95,8 +95,10 @@ namespace Bibcam
 			}
 		}
 
+		private BibcamMetadataDecoder decoder;
 		private void Sample()
 		{
+			if (!decoder) decoder = GetComponent<BibcamMetadataDecoder>();
 			if (!demuxer || !shader) return;
 			var depthTex = demuxer.DepthTexture;
 			var colTex = demuxer.ColorTexture;
@@ -115,8 +117,8 @@ namespace Bibcam
 				colors = new ComputeBuffer(points.count, sizeof(float) * 3, ComputeBufferType.Structured);
 			}
 
-			var rayParams = BibcamRenderUtils.RayParams(camera);
-			var inverseView = BibcamRenderUtils.InverseView(camera);
+			var rayParams = BibcamRenderUtils.RayParams(decoder.Metadata);
+			var inverseView = BibcamRenderUtils.InverseView(decoder.Metadata);
 
 			shader.SetTexture(0, "_DepthTexture", depthTex);
 			shader.SetTexture(0, "_ColorTexture", colTex);

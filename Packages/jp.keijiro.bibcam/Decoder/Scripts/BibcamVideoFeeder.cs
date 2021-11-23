@@ -26,7 +26,7 @@ public sealed class BibcamVideoFeeder : MonoBehaviour
     void OnDestroy()
       => Destroy(_delay);
 
-    void Update()
+    public void Update()
     {
     	if(!_delay) _delay = new RenderTexture(1920, 1080, 0);
         var video = GetComponent<VideoPlayer>();
