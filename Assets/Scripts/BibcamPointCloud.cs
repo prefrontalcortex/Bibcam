@@ -80,10 +80,8 @@ namespace Bibcam
 		{
 			if (renderBufferedPoints)
 			{
-				if (bufferedPointsBuffer != null &&
-				    bufferedPointsBuffer.IsValid() &&
-				    bufferedColorsBuffer != null &&
-				    bufferedColorsBuffer.IsValid())
+				if (bufferedPointsBuffer != null && bufferedPointsBuffer.IsValid() &&
+				    bufferedColorsBuffer != null && bufferedColorsBuffer.IsValid())
 				{
 					Render(bufferedPointsBuffer, bufferedColorsBuffer);
 				}
@@ -91,7 +89,11 @@ namespace Bibcam
 			else
 			{
 				Sample();
-				Render(points, colors);
+				if(points != null && points.IsValid() && 
+				   colors != null && colors.IsValid())
+				{
+					Render(points, colors);
+				}
 			}
 		}
 
