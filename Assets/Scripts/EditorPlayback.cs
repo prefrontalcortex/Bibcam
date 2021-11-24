@@ -13,6 +13,7 @@ public class EditorPlayback : MonoBehaviour
 {
     [Range(0,1)]
     public float time;
+    public int sampleCount = 100;
 
     private BibcamVideoFeeder feeder;
     private BibcamCameraController camController;
@@ -136,7 +137,7 @@ public class EditorPlayback : MonoBehaviour
         var l = v.length;
         
         // take 100 samples
-        var timestep = l / 100.0;
+        var timestep = l / sampleCount;
 
         v.seekCompleted -= UpdateScene;
         v.seekCompleted += SampleTaken;
@@ -144,7 +145,7 @@ public class EditorPlayback : MonoBehaviour
         if(pointCloud)
             pointCloud.BeginSample();
         
-        var sampleTime = 0.0;
+        var sampleTime = timestep;
         while (sampleTime < l)
         {
             sampleHasBeenTaken = false;
